@@ -1,4 +1,5 @@
 import functools
+import math
 import os
 import tempfile
 import random
@@ -56,6 +57,13 @@ def log_4(n):
     while 4 ** i < n:
         i += 1
     return i
+
+def normalize(array_in, limit=16384):
+    '''Normalize `array_in` array to `limit` elements and 0..limit in magnitude.'''
+    array = array_in - array_in.min()
+    nfactor = math.ceil(array.max() / limit)
+    tfactor = math.ceil(len(array) / limit)
+    return (array[::tfactor] / nfactor).astype(np.integer)
 
 def make_hilbert_png(ordering, png_filename):
     '''Takes a shuffled list of integers 0...n and visualizes it as an image.'''
@@ -256,12 +264,13 @@ def twice_shuffled(num_shards, parallel_reads):
         shuffled_shards.append(pseudoshuffle(subshards, buffer_size=buffer_size, parallel_reads=parallel_reads))
     return pseudoshuffle(shuffled_shards, buffer_size=buffer_size, parallel_reads=parallel_reads)
 
-for i in range(1, 6):
-    make_hilbert_curve_svg(i, os.path.join(OUTPUT_DIR, 'hilbert_curve_{}.svg'.format(i)))
+if __name__ == '__main__':
+    for i in range(1, 6):
+        make_hilbert_curve_svg(i, os.path.join(OUTPUT_DIR, 'hilbert_curve_{}.svg'.format(i)))
 
-create_img_table(basic_scaling, (1024, 4096, 16384), (0, 0.01, 0.1, 0.5, 1))
-create_img_table(chained_scaling, (0, 0.01, 0.1, 0.5), (1, 2, 4))
-create_img_table(sharded_scaling, (0, 0.01, 0.1, 0.5), (1, 2, 4, 8))
-create_img_table(parallel_read_scaling, (1, 2, 4, 8), (1, 2, 4, 8))
-create_img_table(parallel_read_scaling_jittered, (1, 2, 4, 8), (1, 2, 4, 8))
-create_img_table(twice_shuffled, (1, 2, 4, 8), (1, 2, 4, 8))
+    create_img_table(basic_scaling, (1024, 4096, 16384), (0, 0.01, 0.1, 0.5, 1))
+    create_img_table(chained_scaling, (0, 0.01, 0.1, 0.5), (1, 2, 4))
+    create_img_table(sharded_scaling, (0, 0.01, 0.1, 0.5), (1, 2, 4, 8))
+    create_img_table(parallel_read_scaling, (1, 2, 4, 8), (1, 2, 4, 8))
+    create_img_table(parallel_read_scaling_jittered, (1, 2, 4, 8), (1, 2, 4, 8))
+    create_img_table(twice_shuffled, (1, 2, 4, 8), (1, 2, 4, 8))
